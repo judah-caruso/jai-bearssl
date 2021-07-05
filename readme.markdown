@@ -12,6 +12,7 @@ mkdir vendor && cd vendor/
 git clone https://github.com/judah-caruso/jai-bearssl BearSSL
 ```
 
-# Note
+# Notes
 
-This isn't entirely finished. Only a few of the hashing algorithms + SSL/IO have been bound.
+* Due to a temporary limitation in bindings for Jai, `initialize_global_vtables` must be called before BearSSL can be used.
+* This isn't entirely finished. Only a few of the hashing algorithms + SSL/IO have been bound.
