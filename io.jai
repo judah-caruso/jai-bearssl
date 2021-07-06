@@ -449,25 +449,6 @@ br_ec_public_key :: struct {
     qlen  : c.size_t;
 }
 
-br_x509_pkey :: struct {
-    key_type: c.unsigned_char;
-    key: union {
-        rsa : br_rsa_public_key;
-        ec  : br_ec_public_key;
-    };
-}
-
-br_x509_class :: struct {
-    context_size: c.size_t;
-
-    start_chain : (ctx: **br_x509_class, server_name: *c.char) #c_call;
-    start_cert  : (ctx: **br_x509_class, length: u32) #c_call;
-    append      : (ctx: **br_x509_class, buf: *c.unsigned_char, len: c.size_t) #c_call;
-    end_cert    : (ctx: **br_x509_class) #c_call;
-    end_chain   : (ctx: **br_x509_class) -> c.unsigned #c_call;
-    get_pkey    : (ctx: **br_x509_class, usages: *c.unsigned) -> *br_x509_pkey #c_call;
-}
-
 br_tls_prf_impl :: #type (dst: *void, len: c.size_t, secret: *void, secret_len: c.size_t, label: *c.char, seed_num: c.size_t, seed: *br_tls_prf_seed_chunk) #c_call;
 
 br_tls_prf_seed_chunk :: struct {
@@ -526,17 +507,6 @@ br_ec_private_key :: struct {
 br_rsa_pkcs1_sign :: #type (hash_oid: *c.unsigned_char, hash: *c.unsigned_char, hash_len: c.size_t, sk: *br_rsa_private_key, x: *c.unsigned_char) -> u32 #c_call;
 br_ecdsa_sign     :: #type (impl: *br_ec_impl, hf: *br_hash_class, hash_value: *void, sk: *br_ec_private_key, sig: *void) -> c.size_t #c_call;
 
-br_x500_name :: struct {
-    data : *c.unsigned_char;
-    len  : c.size_t;
-}
-
-br_x509_trust_anchor :: struct {
-    dn    : br_x500_name;
-    flags : c.unsigned;
-    pkey  : br_x509_pkey;
-}
-
 br_name_element :: struct {
     oid    : *c.unsigned_char;
     buf    : *c.char;
@@ -545,57 +515,6 @@ br_name_element :: struct {
 }
 
 br_rsa_public :: #type (x: *c.unsigned_char, xlen: c.size_t, pk: *br_rsa_public_key) -> u32 #c_call;
-
-BR_X509_BUFSIZE_KEY :: 520;
-BR_X509_BUFSIZE_SIG :: 512;
-
-br_x509_minimal_context :: struct {
-    vtable : *br_x509_class;
-    pkey   : br_x509_pkey;
-
-    cpu: struct {
-        dp: *u32;
-        rp: *u32;
-        ip: *c.unsigned_char;
-    };
-
-    dp_stack             : [32]u32;
-    rp_stack             : [32]u32;
-    err                  : c.int;
-    server_name          : *c.char;
-    key_usages           : c.unsigned_char;
-    days                 : u32;
-    seconds              : u32;
-    cert_length          : u32;
-    num_certs            : u32;
-    hbuf                 : *c.unsigned_char;
-    hlen                 : c.size_t;
-    pad                  : [256]c.unsigned_char;
-    ee_pkey_data         : [BR_X509_BUFSIZE_KEY]c.unsigned_char;
-    pkey_data            : [BR_X509_BUFSIZE_KEY]c.unsigned_char;
-    cert_signer_key_type : c.unsigned_char;
-    cert_sig_hash_oid    : u16;
-    cert_sig_hash_len    : c.unsigned_char;
-    cert_sig             : [BR_X509_BUFSIZE_SIG]c.unsigned_char;
-    cert_sig_len         : u16;
-    min_rsa_size         : s16;
-    trust_anchors        : *br_x509_trust_anchor;
-    trust_anchors_num    : c.size_t;
-    do_mhash             : c.unsigned_char;
-    mhash                : br_multihash_context;
-    tbs_hash             : [64]c.unsigned_char;
-    do_dn_hash           : c.unsigned_char;
-    dn_hash_impl         : *br_hash_class;
-    dn_hash              : br_hash_compat_context;
-    current_dn_hash      : [64]c.unsigned_char;
-    next_dn_hash         : [64]c.unsigned_char;
-    saved_dn_hash        : [64]c.unsigned_char;
-    name_elts            : *br_name_element;
-    num_name_elts        : c.size_t;
-    irsa                 : br_rsa_pkcs1_vrfy;
-    iecdsa               : br_ecdsa_vrfy;
-    iec                  : *br_ec_impl;
-}
 
 run_until                        :: (ctx: *br_sslio_context, target: c.unsigned) -> c.int                                                                                                                                                                                                                 #foreign BearSSL;
 br_sslio_init                    :: (ctx: *br_sslio_context, engine: *br_ssl_engine_context, low_read: (read_context: *void, data: *c.unsigned_char, len: c.size_t) #c_call, read_context: *void, low_write: (write_context: *void, data: *c.unsigned_char, len: c.size_t) #c_call, write_context: *void) #foreign BearSSL;

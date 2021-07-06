@@ -136,3 +136,4 @@ initialize_global_vtables :: () {
 #load "hmac.jai";
 #load "ssl.jai";
 #load "io.jai";
+#load "x509.jai";
